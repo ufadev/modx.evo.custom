@@ -833,7 +833,7 @@ class DocumentParser {
         if($matches) {
             $settingsCount= count($matches[1]);
             for ($i= 0; $i < $settingsCount; $i++) {
-                if (array_key_exists($matches[1][$i], $this->config))
+                if (!empty($matches[1][$i]) && array_key_exists($matches[1][$i], $this->config))
                     $replace[$i]= $this->config[$matches[1][$i]];
             }
 
