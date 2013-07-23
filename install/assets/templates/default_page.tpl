@@ -4,7 +4,7 @@
  * Пустая страница
  *
  * @category	template
- * @version 	1.0
+ * @version 	4.2
  * @license 	http://opensource.org/licenses/MIT The MIT License (MIT)
  * @internal	@lock_template 0
  * @internal 	@modx_category 1. Основные
@@ -22,6 +22,7 @@
     <title>[*seo-title*]</title>
     <meta name="description" content="[*seo-description*]">
     <meta name="keywords" content="[*seo-keywords*]">
+    [*seo-noindex*]
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="assets/site/css/normalize.css">
     <link rel="stylesheet" href="assets/site/css/main.css">
