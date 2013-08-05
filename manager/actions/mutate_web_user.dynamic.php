@@ -333,6 +333,16 @@ function showHide(what, onoff){
 			<td><input type="text" name="fax" class="inputBox" value="<?php echo isset($_POST['fax']) ? $_POST['fax'] : $userdata['fax']; ?>" onchange="documentDirty=true;" /></td>
 		  </tr>
 		  <tr>
+			<td><?php echo $_lang['user_street']; ?>:</td>
+			<td>&nbsp;</td>
+			<td><input type="text" name="street" class="inputBox" value="<?php echo htmlspecialchars($userdata['street']); ?>" onchange="documentDirty=true;" /></td>
+		</tr>
+		<tr>
+			<td><?php echo $_lang['user_city']; ?>:</td>
+			<td>&nbsp;</td>
+			<td><input type="text" name="city" class="inputBox" value="<?php echo htmlspecialchars($userdata['city']); ?>" onchange="documentDirty=true;" /></td>
+		</tr>
+		  <tr>
 			<td><?php echo $_lang['user_state']; ?>:</td>
 			<td>&nbsp;</td>
 			<td><input type="text" name="state" class="inputBox" value="<?php echo isset($_POST['state']) ? $_POST['state'] : $userdata['state']; ?>" onchange="documentDirty=true;" /></td>
@@ -492,7 +502,7 @@ function showHide(what, onoff){
 			function BrowseServer() {
 				var w = screen.width * 0.7;
 				var h = screen.height * 0.7;
-				OpenServerBrowser("<?php echo MODX_MANAGER_URL;?>media/browser/mcpuk/browser.html?Type=images&Connector=<?php echo MODX_MANAGER_URL;?>media/browser/mcpuk/connectors/php/connector.php&ServerPath=<?php echo $base_url; ?>", w, h);
+				OpenServerBrowser("<?php echo MODX_MANAGER_URL;?>media/browser/mcpuk/browser.html?Type=images&Connector=<?php echo MODX_MANAGER_URL;?>media/browser/mcpuk/connectors/php/connector.php&manager_url=<?php echo MODX_MANAGER_URL; ?>", w, h);
 			}
 			function SetUrl(url, width, height, alt){
 				document.userform.photo.value = url;

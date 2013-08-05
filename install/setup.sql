@@ -839,6 +839,16 @@ UPDATE `{PREFIX}site_content` SET `type`='document', `contentType`='text/css' WH
 UPDATE `{PREFIX}site_content` SET `type`='document', `contentType`='text/html' WHERE `type`='';
 
 
+ALTER TABLE `{PREFIX}user_attributes` 
+ ADD COLUMN `street` varchar(255) NOT NULL DEFAULT '' AFTER `country`,
+ ADD COLUMN `city` varchar(255) NOT NULL DEFAULT '' AFTER `street`;
+
+
+ALTER TABLE `{PREFIX}web_user_attributes`
+ ADD COLUMN `street` varchar(255) NOT NULL DEFAULT '' AFTER `country`,
+ ADD COLUMN `city` varchar(255) NOT NULL DEFAULT '' AFTER `street`;
+
+
 # end related to #MODX-1321
 
 
@@ -918,7 +928,7 @@ INSERT IGNORE INTO `{PREFIX}system_settings`
 ('use_alias_path','1'),
 ('use_udperms','1'),
 ('udperms_allowroot','0'),
-('failed_login_attempts','20'),
+('failed_login_attempts','5'),
 ('blocked_minutes','30'),
 ('use_captcha','0'),
 ('captcha_words','0,1,2,3,4,5,6,7,8,9'),
@@ -946,7 +956,7 @@ INSERT IGNORE INTO `{PREFIX}system_settings`
 ('upload_images','bmp,ico,gif,jpeg,jpg,png,psd,tif,tiff'),
 ('upload_media','au,avi,mp3,mp4,mpeg,mpg,wav,wmv'),
 ('upload_flash','fla,flv,swf'),
-('upload_files','aac,au,avi,css,cache,doc,docx,gz,gzip,htaccess,htm,html,js,mp3,mp4,mpeg,mpg,ods,odp,odt,pdf,ppt,pptx,rar,tar,tgz,txt,wav,wmv,xls,xlsx,xml,z,zip,JPG,JPEG,PNG,GIF'),
+('upload_files','bmp,ico,gif,jpeg,jpg,png,psd,tif,tiff,fla,flv,swf,aac,au,avi,css,cache,doc,docx,gz,gzip,htaccess,htm,html,js,mp3,mp4,mpeg,mpg,ods,odp,odt,pdf,ppt,pptx,rar,tar,tgz,txt,wav,wmv,xls,xlsx,xml,z,zip,JPG,JPEG,PNG,GIF'),
 ('upload_maxsize','104857600'),
 ('new_file_permissions','0644'),
 ('new_folder_permissions','0755'),
@@ -977,12 +987,17 @@ INSERT IGNORE INTO `{PREFIX}system_settings`
 ('remember_last_tab', '1'),
 ('enable_bindings', '1'),
 ('make_folders', '0'),
+('seostrict', '1'),
+('cache_type', '2'),
 ('maxImageWidth', '1600'),
 ('maxImageHeight', '1200'),
 ('thumbWidth', '150'),
 ('thumbHeight', '150'),
 ('thumbsDir', '.thumbs'),
-('jpegQuality', '90');
+('jpegQuality', '90'),
+('denyZipDownload', '0'),
+('denyExtensionRename', '0'),
+('showHiddenFiles', '0');
 
 
 REPLACE INTO `{PREFIX}user_roles` 
@@ -1102,6 +1117,11 @@ REPLACE INTO `{PREFIX}system_eventnames`
 ('204','OnBeforeDocDuplicate','1','Documents'),
 ('205','OnDocDuplicate','1','Documents'),
 ('206','OnManagerMainFrameHeaderHTMLBlock','2',''),
+('207','OnManagerPreFrameLoader','2',''),
+('208','OnManagerFrameLoader','2',''),
+('209','OnManagerTreeInit','2',''),
+('210','OnManagerTreePrerender','2',''),
+('211','OnManagerTreeRender','2',''),
 ('999','OnPageUnauthorized','1',''),
 ('1000','OnPageNotFound','1','');
 

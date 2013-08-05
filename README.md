@@ -1,27 +1,33 @@
 Сборка обзавеласть собственным сайтом: http://modx.com.ua
 Так же рекоменую скачивать сборку с сайта так как на гитхаб не всегда стабильный релиз!!!
 
-!YAMS не работает с d5.3 исправлю в релизе d5.4
-
 !!Ченжлог не содержит те правки которые не отличаются с офф версией 
-текущая нестаблильная верси] 1.0.10-d5.4  (*.07.2013)
+текущая нестаблильная версия 1.0.10-d5.4RC2  (04.08.2013)
 =======================================================
 - под IE9 — не разворачивался календарь (http://modx.im/blog/dmi3yy/955.html#comment8196) 
 - обновил CodeMirror до 1.1b (http://modx.im/blog/addons/960.html)
 - add tv sitemap_exclude for sitemap.xml
 - fix Seostrict (работа с ajax, правильная генерация ссылки на странички со своим суфиксом и на главную)
-- #9849 Replace to DBAPI functions
-- fix Seostrict 404 by Bumkaka
 - Обновление KCFinder (https://github.com/dmi3yy/modx.evo.custom/pull/56) Больше спасибо Pathologic
+- KCFinder возможность скрыть файлы .thumb (https://github.com/dmi3yy/modx.evo.custom/pull/63/) Больше спасибо Pathologic
 - исправленна ошибка с (пишет в логи «fake settings_version») (спасибо Shin)
 - исправленн виджет managermanager для evogalery для работы с админкой не MANAGER (спасибо Shin)
 - webLogin Corected authorization after the password activation (Спасибо Akool)
+- ditto paginate (2 новых параметра $max_paginate = 11; $max_previous = 5;)
+- Кеш с учетом $_GET - теперь можно настраивать в настройках на вкладке Сайт
+- seoStrict in core - в настройке во вкладке ЧПУ  (При использовании YAMS нужно отключать или если нужно использовать SeoStrictPlugin)
+- DBAPI - в ядре MODX теперь все через DBAPI 
+- fix Seostrict 404 by Agel_Nash (большое спасибо Agel_Nash)
+- fix Схлопываются всплывающие окна в Chrome в tinyMCE
+- Ditto Extender: countDocs (спасибо Bumkaka)
+- добавленны новые события (OnManagerTreeInit, OnManagerTreePrerender, OnManagerTreeRender, OnManagerPreFrameLoader, OnManagerFrameLoader)
+- добавлен плагин JotAdminNotify(community.modx-cms.ru/blog/addons/615.html)
+- обновлен multiTV до 1.5.6
+- update CodeMirror to 1.2b
+=============
+- не работает regClientStartupScript на главной странице. 
 
-проверить добавить до выпуска: 
-===
-- дитто пагинацию в параметр
-- seoStrict в настройки 
-- тип TV-параметров «Textarea» превратился в «Textarea (Mini)», а «Textarea (Mini)» превратился в тип «Text».
+
 
 
 текущая версии 1.0.10-d5.3  (13.06.2013)

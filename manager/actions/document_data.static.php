@@ -77,11 +77,11 @@ $keywords = array();
 $sql = 'SELECT k.keyword FROM '.$tbl_site_keywords.' AS k, '.$tbl_keyword_xref.' AS x '.
        'WHERE k.id = x.keyword_id AND x.content_id = \''.$id.'\' '.
        'ORDER BY k.keyword ASC';
-$rs = mysql_query($sql);
-$limit = mysql_num_rows($rs);
+$rs = $modx->db->query($sql);
+$limit = $modx->db->getRecordCount($rs);
 if ($limit > 0) {
 	for ($i = 0; $i < $limit; $i++) {
-		$row = mysql_fetch_assoc($rs);
+		$row = $modx->db->getRow($rs);
 		$keywords[$i] = $row['keyword'];
 	}
 }
@@ -92,11 +92,11 @@ $sql = 'SELECT meta.id, meta.name, meta.tagvalue '.
        'FROM '.$tbl_site_metatags.' AS meta '.
        'LEFT JOIN '.$tbl_site_content_metatags.' AS sc ON sc.metatag_id = meta.id '.
        'WHERE sc.content_id=\''.$content['id'].'\'';
-$rs = mysql_query($sql);
-$limit = mysql_num_rows($rs);
+$rs = $modx->db->query($sql);
+$limit = $modx->db->getRecordCount($rs);
 if ($limit > 0) {
 	for ($i = 0; $i < $limit; $i++) {
-		$row = mysql_fetch_assoc($rs);
+		$row = $modx->db->getRow($rs);
 		$metatags_selected[] = $row['name'].': <i>'.$row['tagvalue'].'</i>';
 	}
 }
@@ -374,7 +374,28 @@ function movedocument() {
 	echo $children_output."\n";
 ?>
 	</div><!-- end tab-page -->
-
+<?php if($modx->config['cache_type'] !=2) { ?>
+	<!-- Page Source -->
+	<div class="tab-page" id="tabSource">
+		<h2 class="tab"><?php echo $_lang['page_data_source']?></h2>
+		<script type="text/javascript">docSettings.addTabPage( document.getElementById( "tabSource" ) );</script>
+		<?php
+		$buffer = "";
+		$filename = $modx->config['base_path']."assets/cache/docid_".$id.".pageCache.php";
+		$handle = @fopen($filename, "r");
+		if(!$handle) {
+			$buffer = $_lang['page_data_notcached'];
+		} else {
+			while (!feof($handle)) {
+				$buffer .= fgets($handle, 4096);
+			}
+			fclose($handle);
+			$buffer = $_lang['page_data_cached'].'<p><textarea style="width: 100%; height: 400px;">'.htmlspecialchars($buffer)."</textarea>\n";
+		}
+		echo $buffer;
+?>
+	</div><!-- end tab-page -->
+<?php } ?>
 
 </div><!-- end documentPane -->
 </div><!-- end sectionBody -->

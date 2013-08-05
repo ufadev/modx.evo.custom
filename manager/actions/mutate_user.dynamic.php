@@ -339,12 +339,12 @@ if (is_array($evtOut))
 
 $notAdmin = ($_SESSION['mgrRole'] == 1) ? "" : "WHERE id != 1";
 $sql = "select name, id from $dbase.`" . $table_prefix . "user_roles` $notAdmin";
-$rs = mysql_query($sql);
+$rs = $modx->db->query($sql);
 ?>
 		<select name="role" class="inputBox" onchange='documentDirty=true;' style="width:300px">
 		<?php
 
-while ($row = mysql_fetch_assoc($rs)) {
+while ($row = $modx->db->getRow($rs)) {
     if ($_REQUEST['a']=='11') {
         $selectedtext = $row['id'] == '1' ? ' selected="selected"' : '';
     } else {
@@ -374,6 +374,16 @@ while ($row = mysql_fetch_assoc($rs)) {
 			<td>&nbsp;</td>
 			<td><input type="text" name="fax" class="inputBox" value="<?php echo htmlspecialchars($userdata['fax']); ?>" onchange="documentDirty=true;" /></td>
 		  </tr>
+		  <tr>
+			<td><?php echo $_lang['user_street']; ?>:</td>
+			<td>&nbsp;</td>
+			<td><input type="text" name="street" class="inputBox" value="<?php echo htmlspecialchars($userdata['street']); ?>" onchange="documentDirty=true;" /></td>
+		</tr>
+		<tr>
+			<td><?php echo $_lang['user_city']; ?>:</td>
+			<td>&nbsp;</td>
+			<td><input type="text" name="city" class="inputBox" value="<?php echo htmlspecialchars($userdata['city']); ?>" onchange="documentDirty=true;" /></td>
+		</tr>
 		  <tr>
 			<td><?php echo $_lang['user_state']; ?>:</td>
 			<td>&nbsp;</td>
@@ -765,7 +775,7 @@ if (is_array($evtOut))
 			function BrowseServer() {
 				var w = screen.width * 0.7;
 				var h = screen.height * 0.7;
-				OpenServerBrowser("<?php echo MODX_MANAGER_URL;?>media/browser/mcpuk/browser.html?Type=images&Connector=<?php echo MODX_MANAGER_URL;?>media/browser/mcpuk/connectors/php/connector.php&ServerPath=<?php echo $base_url; ?>", w, h);
+				OpenServerBrowser("<?php echo MODX_MANAGER_URL; ?>media/browser/mcpuk/browser.html?Type=images&Connector=<?php echo MODX_MANAGER_URL; ?>media/browser/mcpuk/connectors/php/connector.php&manager_url=<?php echo MODX_MANAGER_URL; ?>", w, h);
 			}
 			function SetUrl(url, width, height, alt){
 				document.userform.photo.value = url;

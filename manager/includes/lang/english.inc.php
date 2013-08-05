@@ -415,12 +415,15 @@ $_lang["thumbWidth"]= 'Maximum thumbnail width';
 $_lang["thumbHeight"]= 'Maximum thumbnail height';
 $_lang["thumbsDir"]= 'Thumbnails directory location';
 $_lang["jpegQuality"]= 'JPEG compression';
+$_lang["denyZipDownload"] = 'Disable zip-archives downloading';
+$_lang["denyExtensionRename"] = 'Disable renaming of file extensions';
 $_lang["maxImageWidth_message"]= 'If uploaded image resolution exceeds this setting it will be automatically resized. Set 0 to avoid.';
 $_lang["maxImageHeight_message"]= 'If uploaded image resolution exceeds this setting it will be automatically resized. Set 0 to avoid.';
 $_lang["thumbWidth_message"]= 'Maximum thumbnail width.';
 $_lang["thumbHeight_message"]= 'Maximum thumbnail height.';
 $_lang["thumbsDir_message"]= 'The name of previews folder.';
 $_lang["jpegQuality_message"]= 'JPEG compression quality of thumbnails and resized images';
+$_lang["showHiddenFiles"]= 'Show hidden files in file browser';
 $_lang["keyword"] = 'Keyword';
 $_lang["keywords"] = 'Keywords';
 $_lang["keywords_intro"] = 'To edit a keyword, simply type in the new keyword in the text field next to the keyword you wish to change. To delete a keyword, check the \'delete\' box for that keyword. If you check the keyword\'s delete box, and also change it\'s name, it will be deleted, and the renaming of the keyword will not take place!';
@@ -1165,3 +1168,15 @@ $_lang['setting_resource_tree_node_name'] = 'The node name of a resource tree';
 $_lang['setting_resource_tree_node_name_desc'] = 'Specify the Resource field to use when rendering the nodes in the Resource Tree. Defaults to pagetitle, although any Resource field can be used, such as menutitle, alias.';
 
 $_lang['resource_opt_is_published'] = 'Published';
+
+$_lang["cache_type_title"] = 'Document caching type';
+$_lang["cache_type_1"] = 'Cache is based only on document id (standard)';
+$_lang["cache_type_2"] = 'Cache is based on document id and $_GET parameters';
+$_lang["seostrict_title"] = 'Use SEO Strict URLs';
+$_lang["seostrict_message"] = 'Enforces the use of strict URLs to prevent duplicate content if needed';
+
+$_lang["settings_friendlyurls_alert"] = 'It is necessary to rename the ht.access file of a MODX installation directory at .htaccess to use the Friendly URL function.';
+$_lang["settings_friendlyurls_alert2"] = 'Since it has installed in a subdirectory, it is necessary to change the contents of .htaccess.';
+
+$_lang["user_street"] = 'Street';
+$_lang["user_city"] = 'City';

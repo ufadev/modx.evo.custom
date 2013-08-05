@@ -106,6 +106,14 @@ class DocumentParser {
                 return true;
                 break;
 
+            // PHPMailer
+            case 'MODxMailer' :
+                include_once(MODX_BASE_PATH . 'manager/includes/extenders/modxmailer.class.inc.php');
+                $this->mail= new MODxMailer;
+                if($this->mail) return true;
+                else            return false;
+                break;
+
             default :
                 return false;
         }
@@ -186,7 +194,6 @@ class DocumentParser {
      * @param string $responseCode
      */
     function sendForward($id, $responseCode= '') {
-    //fix 404 in seo strict by Bumkaka
         if ($this->forwards > 0) {
             $this->forwards= $this->forwards - 1;
             $this->documentIdentifier= $id;
@@ -207,9 +214,10 @@ class DocumentParser {
      * Redirect to the error page, by calling sendForward(). This is called for example when the page was not found.
      */
     function sendErrorPage() {
+        // invoke OnPageNotFound event
         $this->invokeEvent('OnPageNotFound');
-        $url = $this->config['error_page'] ? $this->config['error_page'] : $this->config['site_start'];
-        $this->sendForward($url, 'HTTP/1.0 404 Not Found');
+           $url = $this->config['error_page'] ? $this->config['error_page'] : $this->config['site_start'];
+           $this->sendForward($url, 'HTTP/1.0 404 Not Found');
         exit();
     }
 
@@ -428,10 +436,10 @@ class DocumentParser {
         }
         $q= str_replace($this->config['friendly_url_prefix'], "", $q);
         $q= str_replace($this->config['friendly_url_suffix'], "", $q);
-        if (is_numeric($q) && !$this->documentListing[$q]) { /* we got an ID returned, check to make sure it's not an alias */
+        if (is_numeric($q) && !isset($this->documentListing[$q])) { /* we got an ID returned, check to make sure it's not an alias */
             /* FS#476 and FS#308: check that id is valid in terms of virtualDir structure */
             if ($this->config['use_alias_path'] == 1) {
-                if ((($this->virtualDir != '' && !$this->documentListing[$this->virtualDir . '/' . $q]) || ($this->virtualDir == '' && !$this->documentListing[$q])) && (($this->virtualDir != '' && in_array($q, $this->getChildIds($this->documentListing[$this->virtualDir], 1))) || ($this->virtualDir == '' && in_array($q, $this->getChildIds(0, 1))))) {
+                if ((($this->virtualDir != '' && !isset($this->documentListing[$this->virtualDir . '/' . $q])) || ($this->virtualDir == '' && !isset($this->documentListing[$q]))) && (($this->virtualDir != '' && isset($this->documentListing[$this->virtualDir]) && in_array($q, $this->getChildIds($this->documentListing[$this->virtualDir], 1))) || ($this->virtualDir == '' && in_array($q, $this->getChildIds(0, 1))))) {
                     $this->documentMethod= 'id';
                     return $q;
                 } else { /* not a valid id in terms of virtualDir, treat as alias */
@@ -458,9 +466,13 @@ class DocumentParser {
      * @return string
      */
     function checkCache($id) {
-        $md5_hash = '';
-        if(!empty($_GET)) $md5_hash = '_' . md5(http_build_query($_GET));
-        $cacheFile= "assets/cache/docid_" . $id .$md5_hash. ".pageCache.php";
+        if ($this->config['cache_type'] == 2) {
+           $md5_hash = '';
+           if(!empty($_GET)) $md5_hash = '_' . md5(http_build_query($_GET));
+           $cacheFile= "assets/cache/docid_" . $id .$md5_hash. ".pageCache.php";
+        }else{
+           $cacheFile= "assets/cache/docid_" . $id . ".pageCache.php";
+        }
         if (file_exists($cacheFile)) {
             $this->documentGenerated= 0;
             $flContent = file_get_contents($cacheFile, false);
@@ -490,7 +502,7 @@ class DocumentParser {
                             $tbldg= $this->getFullTableName("document_groups");
                             $secrs= $this->db->query("SELECT id FROM $tbldg WHERE document = '" . $id . "' LIMIT 1;");
                             if ($secrs)
-                                $seclimit= mysql_num_rows($secrs);
+                                $seclimit= $this->db->getRecordCount($secrs);
                         }
                         if ($seclimit > 0) {
                             // match found but not publicly accessible, send the visitor to the unauthorized_page
@@ -530,7 +542,6 @@ class DocumentParser {
      * @param boolean $noEvent Default: false
      */
     function outputContent($noEvent= false) {
-
         $this->documentOutput= $this->documentContent;
 
         if ($this->documentGenerated == 1 && $this->documentObject['cacheable'] == 1 && $this->documentObject['type'] == 'document' && $this->documentObject['published'] == 1) {
@@ -723,9 +734,15 @@ class DocumentParser {
             $basepath= $this->config["base_path"] . "assets/cache";
             // invoke OnBeforeSaveWebPageCache event
             $this->invokeEvent("OnBeforeSaveWebPageCache"); 
-            $md5_hash = '';
-            if(!empty($_GET)) $md5_hash = '_' . md5(http_build_query($_GET));
-            if ($fp= @ fopen($basepath . "/docid_" . $this->documentIdentifier . $md5_hash .".pageCache.php", "w")) {
+            if ($this->config['cache_type'] == 2) {
+                $md5_hash = '';
+                if(!empty($_GET)) $md5_hash = '_' . md5(http_build_query($_GET));
+                $pageCache = $md5_hash .".pageCache.php";
+            }else{
+                $pageCache = ".pageCache.php";
+            }
+
+            if ($fp= @ fopen($basepath . "/docid_" . $this->documentIdentifier . $pageCache, "w")) {
                 // get and store document groups inside document object. Document groups will be used to check security on cache pages
                 $sql= "SELECT document_group FROM " . $this->getFullTableName("document_groups") . " WHERE document='" . $this->documentIdentifier . "'";
                 $docGroups= $this->db->getColumn("document_group", $sql);
@@ -801,6 +818,7 @@ class DocumentParser {
     function mergeDocumentContent($content) {
         $replace= array ();
         $matches = $this->getTagsFromContent($content,'[*','*]');
+		if($matches){
         $variableCount= count($matches[1]);
         $basepath= MODX_MANAGER_PATH . "includes";
         for ($i= 0; $i < $variableCount; $i++) {
@@ -817,7 +835,7 @@ class DocumentParser {
             $replace[$i]= $value;
         }
         $content= str_replace($matches[0], $replace, $content);
-
+		}
         return $content;
     }
 
@@ -1190,9 +1208,13 @@ class DocumentParser {
         // rewrite the urls
         if ($this->config['friendly_urls'] == 1) {
             $aliases= array ();
-            foreach ($this->aliasListing as $item) {
+            /* foreach ($this->aliasListing as $item) {
                 $aliases[$item['id']]= (strlen($item['path']) > 0 ? $item['path'] . '/' : '') . $item['alias'];
                 $isfolder[$item['id']]= $item['isfolder'];
+            } */
+			foreach($this->documentListing as $key=>$val){
+				$aliases[$val] = $key;
+				$isfolder[$val] = $this->aliasListing[$val]['isfolder'];
             }
             $in= '!\[\~([0-9]+)\~\]!ise'; // Use preg_replace with /e to make it evaluate PHP
             $isfriendly= ($this->config['friendly_alias_urls'] == 1 ? 1 : 0);
@@ -1200,21 +1222,32 @@ class DocumentParser {
             $suff= $this->config['friendly_url_suffix'];
             $thealias= '$aliases[\\1]';
             $thefolder= '$isfolder[\\1]';
-            //$found_friendlyurl= "\$this->makeFriendlyURL('$pref','$suff',$thealias,$thefolder)";
-            $found_friendlyurl= "\$this->toAlias(\$this->makeFriendlyURL('$pref','$suff',$thealias,$thefolder,'\\1'))";
+            if ($this->config['seostrict']=='1'){
+			
+               $found_friendlyurl= "\$this->toAlias(\$this->makeFriendlyURL('$pref','$suff',$thealias,$thefolder,'\\1'))";
+            }else{
+               $found_friendlyurl= "\$this->makeFriendlyURL('$pref','$suff',$thealias,$thefolder,'\\1')";
+            }
             $not_found_friendlyurl= "\$this->makeFriendlyURL('$pref','$suff','" . '\\1' . "')";
             $out= "({$isfriendly} && isset({$thealias}) ? {$found_friendlyurl} : {$not_found_friendlyurl})";
             $documentSource= preg_replace($in, $out, $documentSource);
+			
         } else {
             $in= '!\[\~([0-9]+)\~\]!is';
             $out= "index.php?id=" . '\1';
             $documentSource= preg_replace($in, $out, $documentSource);
         }
+		
+		$this->_fixURI();
+        return $documentSource;
+    }
+	
+	function _fixURI(){
         // FIX URLs
-        if ((int)$this->documentIdentifier != 0 ){
+        if ((int)$this->documentIdentifier != 0 && $this->config['seostrict']=='1' ){
             if ($this->config['site_status'] == 1) {
-                $myProtocol = ($_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-                $parts = explode("?", $_SERVER['REQUEST_URI']); 
+                $myProtocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
+                $parts = explode("?", $_SERVER['REQUEST_URI'],2); 
                 $strictURL =  $this->toAlias($this->makeUrl($this->documentIdentifier));
                 $myDomain = $myProtocol . "://" . $_SERVER['HTTP_HOST'];
                 $newURL = $myDomain . $strictURL;
@@ -1225,25 +1258,22 @@ class DocumentParser {
                         // Force redirect of site start
                         // $this->sendErrorPage();
                         header("HTTP/1.1 301 Moved Permanently");
-                        $qstring = preg_replace("#(^|&)(q|id)=[^&]+#", '', $parts[1]);  // Strip conflicting id/q from query string
+                        $qstring = isset($parts[1]) ? preg_replace("#(^|&)(q|id)=[^&]+#", '', $parts[1]) : ''; // Strip conflicting id/q from query string
                         if ($qstring) header('Location: ' . $this->config['site_url'] . '?' . $qstring);
                         else header('Location: ' . $this->config['site_url']);
                         exit(0);
                     }
-                }
-                
-                if ($parts[0] != $strictURL ){
-                    if ( $this->documentIdentifier>0 ){
-                    
-                    } else {                
-                        $this->sendErrorPage();
-                        exit(0);
-                    }
-                }
-                
+                }elseif ($parts[0] != $strictURL && $this->documentIdentifier != $this->config['error_page']){
+                     // Force page redirect
+                    header("HTTP/1.1 301 Moved Permanently");
+                    $qstring = preg_replace("#(^|&)(q|id)=[^&]+#", '', $parts[1]);  // Strip conflicting id/q from query string
+                    if ($qstring) header('Location: ' . $strictURL . '?' . $qstring);
+                    else header('Location: ' . $strictURL);
+                    exit(0);
+                   
+                }      
             }
         }
-        return $documentSource;
     }
     
     /**
@@ -1290,7 +1320,7 @@ class DocumentParser {
                 // check if file is not public
                 $secrs= $this->db->query($q);
                 if ($secrs)
-                    $seclimit= mysql_num_rows($secrs);
+                    $seclimit= $this->db->getRecordCount($secrs);
             }
             if ($seclimit > 0) {
                 // match found but not publicly accessible, send the visitor to the unauthorized_page
@@ -1399,6 +1429,7 @@ class DocumentParser {
      * - finally calls prepareResponse()
      */
     function executeParser() {
+
         //error_reporting(0);
         if (version_compare(phpversion(), "5.0.0", ">="))
             set_error_handler(array (
@@ -1465,15 +1496,14 @@ class DocumentParser {
         }
         if ($this->documentMethod == "alias") {
             $this->documentIdentifier= $this->cleanDocumentIdentifier($this->documentIdentifier);
-        }
 
-        if ($this->documentMethod == "alias") {
             // Check use_alias_path and check if $this->virtualDir is set to anything, then parse the path
             if ($this->config['use_alias_path'] == 1) {
                 $alias= (strlen($this->virtualDir) > 0 ? $this->virtualDir . '/' : '') . $this->documentIdentifier;
-                if (array_key_exists($alias, $this->documentListing)) {
+                if (isset($this->documentListing[$alias])) {
                     $this->documentIdentifier= $this->documentListing[$alias];
                 } else {
+					//@TODO: check new $alias;
                     $this->sendErrorPage();
                 }
             } else {
@@ -1481,10 +1511,9 @@ class DocumentParser {
             }
             $this->documentMethod= 'id';
         }
-
+		//$this->_fixURI();
         // invoke OnWebPageInit event
         $this->invokeEvent("OnWebPageInit");
-
         // invoke OnLogPageView event
         if ($this->config['track_visitors'] == 1) {
             $this->invokeEvent("OnLogPageHit");
@@ -1509,6 +1538,7 @@ class DocumentParser {
             // invoke OnLoadWebPageCache  event
             $this->invokeEvent("OnLoadWebPageCache");
         } else {
+
             // get document object
             $this->documentObject= $this->getDocumentObject($this->documentMethod, $this->documentIdentifier);
 
@@ -1586,6 +1616,10 @@ class DocumentParser {
             //              $this->regClientStartupHTMLBlock('<base href="'.$this->config['site_url'].'" />');
             //          }
         }
+
+		if($this->documentIdentifier==$this->config['error_page'] &&  $this->config['error_page']!=$this->config['site_start']){
+			header('HTTP/1.0 404 Not Found');
+		}
         register_shutdown_function(array (
             & $this,
             "postProcess"
@@ -2139,8 +2173,9 @@ class DocumentParser {
         }
 
         //fix strictUrl by Bumkaka
-        $url = $this->toAlias($url);
-        
+        if ($this->config['seostrict']=='1'){
+           $url = $this->toAlias($url);
+        }
         if ($this->config['xhtml_urls']) {
             return preg_replace("/&(?!amp;)/","&amp;", $host . $virtualDir . $url);
         } else {
@@ -2221,8 +2256,7 @@ class DocumentParser {
      * @return boolean|string
      */
     function getChunk($chunkName) {
-        $t= $this->chunkCache[$chunkName];
-        return $t;
+        return isset($this->chunkCache[$chunkName]) ? $this->chunkCache[$chunkName] : null;
     }
 
     function parseChunk($chunkName, $chunkArr, $prefix= "{", $suffix= "}") {
@@ -2757,7 +2791,7 @@ class DocumentParser {
               WHERE mu.id = '$uid'
               ";
         $rs= $this->db->query($sql);
-        $limit= mysql_num_rows($rs);
+        $limit= $this->db->getRecordCount($rs);
         if ($limit == 1) {
             $row= $this->db->getRow($rs);
             if (!$row["usertype"])
@@ -2780,7 +2814,7 @@ class DocumentParser {
               WHERE wu.id='$uid'
               ";
         $rs= $this->db->query($sql);
-        $limit= mysql_num_rows($rs);
+        $limit= $this->db->getRecordCount($rs);
         if ($limit == 1) {
             $row= $this->db->getRow($rs);
             if (!$row["usertype"])
@@ -2845,7 +2879,7 @@ class DocumentParser {
         if ($_SESSION["webValidated"] == 1) {
             $tbl= $this->getFullTableName("web_users");
             $ds= $this->db->query("SELECT `id`, `username`, `password` FROM $tbl WHERE `id`='" . $this->getLoginUserID() . "'");
-            $limit= mysql_num_rows($ds);
+            $limit= $this->db->getRecordCount($ds);
             if ($limit == 1) {
                 $row= $this->db->getRow($ds);
                 if ($row["password"] == md5($oldPwd)) {
@@ -3125,7 +3159,7 @@ class DocumentParser {
                 // get plugin code
                 if (isset ($this->pluginCache[$pluginName])) {
                     $pluginCode= $this->pluginCache[$pluginName];
-                    $pluginProperties= $this->pluginCache[$pluginName . "Props"];
+                    $pluginProperties= isset($this->pluginCache[$pluginName . "Props"]) ? $this->pluginCache[$pluginName . "Props"] : '';
                 } else {
                     $sql= "SELECT `name`, `plugincode`, `properties` FROM " . $this->getFullTableName("site_plugins") . " WHERE `name`='" . $pluginName . "' AND `disabled`=0;";
                     $result= $this->db->query($sql);
@@ -3493,6 +3527,38 @@ class DocumentParser {
         return round($size,2).' '.$a[$pos];
     }
 
+	function getIdFromAlias($alias)
+	{
+		$children = array();
+		
+		if($this->config['use_alias_path']==1)
+		{
+			if(strpos($alias,'/')!==false) $_a = explode('/', $alias);
+			else                           $_a[] = $alias;
+			$id= 0;
+			
+			foreach($_a as $alias)
+			{
+				if($id===false) break;
+				$alias = $this->db->escape($alias);
+				$rs  = $this->db->select('id', '[+prefix+]site_content', "deleted=0 and parent='{$id}' and alias='{$alias}'");
+				if($this->db->getRecordCount($rs)==0) $rs  = $this->db->select('id', '[+prefix+]site_content', "deleted=0 and parent='{$id}' and id='{$alias}'");
+				$row = $this->db->getRow($rs);
+				
+				if($row) $id = $row['id'];
+				else     $id = false;
+			}
+		}
+		else
+		{
+			$rs = $this->db->select('id', '[+prefix+]site_content', "deleted=0 and alias='{$alias}'", 'parent, menuindex');
+			$row = $this->db->getRow($rs);
+			
+			if($row) $id = $row['id'];
+			else     $id = false;
+		}
+		return $id;
+	}
     // End of class.
 
 }

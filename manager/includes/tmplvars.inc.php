@@ -135,14 +135,14 @@
 								lastImageCtrl = ctrl;
 								var w = screen.width * 0.7;
 								var h = screen.height * 0.7;
-								OpenServerBrowser('".$base_url.MGR_DIR."/media/browser/mcpuk/browser.html?Type=images&Connector=".$base_url.MGR_DIR."/media/browser/mcpuk/connectors/php/connector.php&ServerPath=".$base_url."', w, h);
+								OpenServerBrowser('".MODX_MANAGER_URL."media/browser/mcpuk/browser.html?Type=images&Connector=".MODX_MANAGER_URL."media/browser/mcpuk/connectors/php/connector.php&manager_url=".MODX_MANAGER_URL."', w, h);
 							}
 							
 							function BrowseFileServer(ctrl) {
 								lastFileCtrl = ctrl;
 								var w = screen.width * 0.7;
 								var h = screen.height * 0.7;
-								OpenServerBrowser('".$base_url.MGR_DIR."/media/browser/mcpuk/browser.html?Type=files&Connector=".$base_url.MGR_DIR."/media/browser/mcpuk/connectors/php/connector.php&ServerPath=".$base_url."', w, h);
+								OpenServerBrowser('".MODX_MANAGER_URL."media/browser/mcpuk/browser.html?Type=files&Connector=".MODX_MANAGER_URL."media/browser/mcpuk/connectors/php/connector.php&manager_url=".MODX_MANAGER_URL."', w, h);
 							}
 							
 							function SetUrl(url, width, height, alt){
@@ -191,14 +191,14 @@
 								lastImageCtrl = ctrl;
 								var w = screen.width * 0.7;
 								var h = screen.height * 0.7;
-								OpenServerBrowser('".$base_url.MGR_DIR."/media/browser/mcpuk/browser.html?Type=images&Connector=".$base_url.MGR_DIR."/media/browser/mcpuk/connectors/php/connector.php&ServerPath=".$base_url."', w, h);
+								OpenServerBrowser('".MODX_MANAGER_URL."media/browser/mcpuk/browser.html?Type=images&Connector=".MODX_MANAGER_URL."media/browser/mcpuk/connectors/php/connector.php&manager_url=".MODX_MANAGER_URL."', w, h);
 							}
 										
 							function BrowseFileServer(ctrl) {
 								lastFileCtrl = ctrl;
 								var w = screen.width * 0.7;
 								var h = screen.height * 0.7;
-								OpenServerBrowser('".$base_url.MGR_DIR."/media/browser/mcpuk/browser.html?Type=files&Connector=".$base_url.MGR_DIR."/media/browser/mcpuk/connectors/php/connector.php&ServerPath=".$base_url."', w, h);
+								OpenServerBrowser('".MODX_MANAGER_URL."media/browser/mcpuk/browser.html?Type=files&Connector=".MODX_MANAGER_URL."media/browser/mcpuk/connectors/php/connector.php&manager_url=".MODX_MANAGER_URL."', w, h);
 							}
 							
 							function SetUrl(url, width, height, alt){
@@ -278,10 +278,11 @@
 	} // end renderFormElement function
 
 	function ParseIntputOptions($v) {
+		global $modx;
 		$a = array();
 		if(is_array($v)) return $v;
 		else if(is_resource($v)) {
-			while ($cols = mysql_fetch_row($v)) $a[] = $cols;
+			while ($cols = $modx->db->getRow($v,'num')) $a[] = $cols;
 		}
 		else $a = explode("||", $v);
 		return $a;
